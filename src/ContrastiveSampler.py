@@ -1,38 +1,27 @@
 from collections import defaultdict
+from torchvision.datasets import MNIST
+import torchvision.transforms as transforms
 import random
 
+from utils import make_directory
 
-random.seed(4)
 
 class ContrastiveSampler:
     def __init__(self, train_data, pos_samples=5, neg_samples=5):
         self.train_data = train_data
-        self.pos_samples = pos_samples
-        self.neg_samples = neg_samples
+        self.class_idxs, self.classes_list = self.__get_class_idxs()
 
-    def sample_data(self):
-        self.__sample_idxs()
-        formated_output = self.__format_idxs()
-        return formated_output
-
-    def __sample_idxs(self):
-        self.sampled_idxs = defaultdict(list)
-        class_idxs, classes_list = self.__get_class_idxs()
-        for idx, target in enumerate(self.train_data.targets):
-            # select random idxs of positive class
-            pos_sample_idxs = random.sample(
-                class_idxs[target.item()], k=self.pos_samples)
-            self.sampled_idxs[idx].extend(
-                [(pos_sample_idx, 1) for pos_sample_idx in pos_sample_idxs])
-
-            # select random idxs of negative classes
-            neg_classes = random.choices(
-                [x for x in classes_list if x != target.item()], k=self.neg_samples)
-            for neg_class in neg_classes:
-                neg_sample_idx = random.sample(class_idxs[neg_class], k=1)[0]
-                self.sampled_idxs[idx].append((neg_sample_idx, 0))
-
-        return
+    def sample_data(self, anchor_id, anchor_target):
+        #flip a coin to decide if positive or negative pair
+        is_pos = random.choice([0,1])
+        if is_pos == 1:
+            pair_id = random.sample(self.class_idxs[anchor_target], k=1)[0]
+        else: 
+            # randomly select another class
+            neg_class = random.choice([x for x in self.classes_list if x != anchor_target])
+            pair_id = random.sample(self.class_idxs[neg_class], k=1)[0]
+    
+        return pair_id, is_pos
 
     def __get_class_idxs(self):
         class_idxs = defaultdict(list)
@@ -40,16 +29,12 @@ class ContrastiveSampler:
             class_idxs[target.item()].append(idx)
         return class_idxs, list(class_idxs.keys())
 
-    def __format_idxs(self):
-        formated_output = list()
-        for anchor_id, samples in self.sampled_idxs.items():
-            for sample_id, is_pos in samples:
-                formated_output.append([anchor_id, sample_id, is_pos])
-        return formated_output
-
 
 if __name__ == "__main__":
-    pass
-
-
-
+    data_path = make_directory("../datasets/")
+    mnist_transforms = transforms.Compose([transforms.ToTensor()])
+    train_data = MNIST(root=data_path, train=True, transform=mnist_transforms)
+    
+    sampler = ContrastiveSampler(train_data)
+    print(sampler.sample_data(0, 5))
+    
