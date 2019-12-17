@@ -25,7 +25,7 @@ def mean_average_precision(model, query_loader, gallery_loader, k=-1, function='
         k = gallery_loader.dataset.data_length
 
     distances, query_targets, gallery_targets = get_pairwise_distances(model, query_loader, gallery_loader, function)
-    sorted_dists = np.argsort(-distances, axis=1)[:,:k] # evaluate only precision@k 
+    sorted_dists = np.argsort(distances, axis=1)[:,:k] # evaluate only precision@k 
 
     groundtruths_per_class = gallery_loader.dataset.n_groundtruths
     sum_average_precision = 0.0

@@ -26,11 +26,6 @@ mnist_transforms = transforms.Compose([transforms.ToTensor()])
 train_data = MNIST(root=data_path, train=True, transform=mnist_transforms)
 test_data = MNIST(root=data_path, train=False, transform=mnist_transforms)
 
-#############################################
-# DEBUG
-test_data.data = test_data.data[:100, :, :]
-#############################################
-
 sampler = ContrastiveSampler(train_data)
 train_dataset = MNISTData(train_data, sampler)
 test_dataset = MNISTData(test_data, sampler)
@@ -49,8 +44,11 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 
 # train(model, criterion, train_dataloader, test_dataloader, optimizer, scheduler, experiment_name, n_epochs=20)
 model = utils.load_model(model, experiment_name)
-embeddings_matrix, targets_vector = utils.get_dataset_embeddings(
-    model, train_dataloader)
-train_dataset.plot_2D_embeddings(embeddings_matrix, targets_vector)
-# mAP = mean_average_precision(model, test_dataloader, train_dataloader, k=10)
-# print(mAP)
+
+mAP = mean_average_precision(model, test_dataloader, train_dataloader)
+print(mAP)
+
+
+# embeddings_matrix, targets_vector = utils.get_dataset_embeddings(
+#     model, test_dataloader)
+# train_dataset.plot_2D_embeddings(embeddings_matrix, targets_vector)
