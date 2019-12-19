@@ -26,7 +26,10 @@ class ContrastiveSampler:
     def __get_class_idxs(self):
         class_idxs = defaultdict(list)
         for idx, target in enumerate(self.train_data.targets):
-            class_idxs[target.item()].append(idx)
+            if type(target) is int:
+                class_idxs[target].append(idx)
+            else:
+                class_idxs[target.item()].append(idx)
         return class_idxs, list(class_idxs.keys())
 
 
