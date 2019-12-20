@@ -13,7 +13,7 @@ class ContrastiveSampler:
 
     def sample_data(self, anchor_id, anchor_target):
         #flip a coin to decide if positive or negative pair
-        is_pos = random.choice([0,1])
+        is_pos = random.choice([0,0,0,1])
         if is_pos == 1:
             pair_id = random.sample(self.class_idxs[anchor_target], k=1)[0]
         else: 
