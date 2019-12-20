@@ -15,14 +15,15 @@ import utils
 from config import device
 
 dataset = "CIFAR10"
-n_epochs = 2
+n_epochs = 20
 data_path = utils.make_directory("../datasets/")
 experiment_name = "CIFAR_CUDA_test"
-batch_size = 32
-num_workers = 2
+batch_size = 128
+num_workers = 4
 lr = 1e-3
 step_size = 8
 margin = 1.0
+embedding_dim=32
 
 data_transforms = transforms.Compose([transforms.ToTensor()])
 
@@ -31,7 +32,7 @@ if dataset == "MNIST":
     train_data = MNIST(root=data_path, train=True, transform=data_transforms)
     test_data = MNIST(root=data_path, train=False, transform=data_transforms)
 elif dataset == "CIFAR10":
-    embedding_net = CIFAREmbeddingNet()
+    embedding_net = CIFAREmbeddingNet(embedding_dim)
     train_data = CIFAR10(root=data_path, train=True, transform=data_transforms)
     test_data = CIFAR10(root=data_path, train=False, transform=data_transforms)
 

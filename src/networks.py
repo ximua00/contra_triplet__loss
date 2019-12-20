@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import models
 
 
 class MNISTEmbeddingNet(nn.Module):
@@ -43,37 +44,12 @@ class CIFAREmbeddingNet(nn.Module):
     def __init__(self, embedding_dim=2):
         super(CIFAREmbeddingNet, self).__init__()
         self.embedding_dim = embedding_dim
-        self.batchnorm1 = nn.BatchNorm2d(32)
-        self.batchnorm2 = nn.BatchNorm2d(64)
-        self.batchnorm3 = nn.BatchNorm1d(256)
 
+        self.model = models.googlenet(pretrained=False, aux_logits=False)
+        self.model.fc.out_features = self.embedding_dim
 
-        self.convnet = nn.Sequential(nn.Conv2d(3, 32, 5),
-                                     self.batchnorm1,
-                                     nn.PReLU(),
-                                     nn.MaxPool2d(2, stride=2),
-                                     nn.Conv2d(32, 64, 5),
-                                     self.batchnorm2,
-                                     nn.PReLU(),
-                                     nn.MaxPool2d(2, stride=2)
-                                     )
-
-        self.fc = nn.Sequential(nn.Linear(1600, 256),
-                                self.batchnorm3,
-                                nn.PReLU(),
-                                nn.Linear(256, 64),
-                                nn.PReLU(),
-                                nn.Linear(64, self.embedding_dim)
-                                )
-
-    def forward(self, x):
-        output = self.convnet(x)
-        output = output.view(output.size()[0], -1)
-        output = self.fc(output)
-        return output
-
-    def get_embedding(self, x):
-        return self.forward(x)
+    def forward(self,x):
+        return self.model(x)
 
 
 class SiameseNet(nn.Module):
