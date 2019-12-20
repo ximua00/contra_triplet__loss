@@ -15,11 +15,11 @@ import utils
 from config import device
 
 dataset = "CIFAR10"
-n_epochs = 20
+n_epochs = 2
 data_path = utils.make_directory("../datasets/")
-experiment_name = "CIFAR_CUDA_test"
-batch_size = 128
-num_workers = 4
+experiment_name = "CIFAR_LENET_test"
+batch_size = 32
+num_workers = 2
 lr = 1e-3
 step_size = 8
 margin = 1.0

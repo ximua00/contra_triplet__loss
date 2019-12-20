@@ -1,6 +1,8 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
+from collections import OrderedDict
 
 
 class MNISTEmbeddingNet(nn.Module):
@@ -39,17 +41,33 @@ class MNISTEmbeddingNet(nn.Module):
     def get_embedding(self, x):
         return self.forward(x)
 
-
 class CIFAREmbeddingNet(nn.Module):
-    def __init__(self, embedding_dim=2):
+    def __init__(self, embedding_dim=32):
         super(CIFAREmbeddingNet, self).__init__()
         self.embedding_dim = embedding_dim
 
-        self.model = models.googlenet(pretrained=False, aux_logits=False)
-        self.model.fc.out_features = self.embedding_dim
+        self.convnet = nn.Sequential(OrderedDict([
+            ('c1', nn.Conv2d(3, 16, kernel_size=(5, 5))),
+            ('relu1', nn.ReLU()),
+            ('s2', nn.MaxPool2d(kernel_size=(2, 2), stride=2)),
+            ('c3', nn.Conv2d(16, 32, kernel_size=(5, 5))),
+            ('relu3', nn.ReLU()),
+            ('s4', nn.MaxPool2d(kernel_size=(2, 2), stride=2)),
+            ('c5', nn.Conv2d(32, 120, kernel_size=(5, 5))),
+            ('relu5', nn.ReLU())
+        ]))
 
-    def forward(self,x):
-        return self.model(x)
+        self.fc = nn.Sequential(OrderedDict([
+            ('f6', nn.Linear(120, 84)),
+            ('relu6', nn.ReLU()),
+            ('f7', nn.Linear(84, self.embedding_dim))
+        ]))
+
+    def forward(self, img):
+        output = self.convnet(img)
+        output = output.view(img.size(0), -1)
+        output = self.fc(output)
+        return output
 
 
 class SiameseNet(nn.Module):
@@ -65,3 +83,9 @@ class SiameseNet(nn.Module):
 
     def get_embedding(self, x):
         return self.embedding_net(x)
+
+
+if __name__ == "__main__":
+    x=torch.rand((1,3,32,32))
+    embedding_net = CIFAREmbeddingNet()
+    print(embedding_net(x).size())
