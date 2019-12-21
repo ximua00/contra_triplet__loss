@@ -41,21 +41,15 @@ def get_dataset_embeddings(model, dataloader):
 
 
 def get_colorcode(dataset):
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+            '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+            '#bcbd22', '#17becf']
     if dataset == "MNIST":
         classes = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                  '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-                  '#bcbd22', '#17becf']
-    if dataset == "FashionMNIST":
+    elif dataset == "FashionMNIST":
         classes = ["T-shirt", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle"]
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                  '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-                  '#bcbd22', '#17becf']
-    if dataset == "CIFAR10":
+    elif dataset == "CIFAR10":
         classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                  '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-                  '#bcbd22', '#17becf']
 
-    return classes, colors
+    return colors, classes
  
