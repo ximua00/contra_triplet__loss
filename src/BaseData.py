@@ -60,6 +60,9 @@ class BaseData(Dataset):
         plt.legend(classes)
         plt.show()
 
+    def plot_ND_embeddings(self, embeddings, targets, colors, classes, xlim=None, ylim=None):
+        raise NotImplementedError
+
 
 if __name__ == "__main__":
     from networks import CIFAREmbeddingNet
