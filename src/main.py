@@ -14,16 +14,16 @@ from metrics import mean_average_precision
 import utils
 from config import device
 
-dataset = "FashionMNIST"
+dataset = "CIFAR10"
 n_epochs = 30
 data_path = utils.make_directory("../datasets/")
-experiment_name = "2D"
+experiment_name = "32D"
 batch_size = 32
 num_workers = 4
 lr = 1e-3
 step_size = 8
 margin = 1.0
-embedding_dim=2
+embedding_dim=32
 
 experiment_name = dataset + "_" + experiment_name
 
@@ -41,6 +41,7 @@ if dataset == "FashionMNIST":
     test_data = FashionMNIST(root=data_path, train=False, transform=data_transforms, download=True)
 elif dataset == "CIFAR10":
     embedding_net = CIFAREmbeddingNet(embedding_dim)
+    data_transforms = transforms.Compose([transforms.ToTensor()])
     train_data = CIFAR10(root=data_path, train=True, transform=data_transforms)
     test_data = CIFAR10(root=data_path, train=False, transform=data_transforms)
 
@@ -62,14 +63,19 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 
 
 
-train(model, criterion, train_dataloader, test_dataloader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
-# model = utils.load_model(model, experiment_name)
-
+# # train(model, criterion, train_dataloader, test_dataloader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
+model = utils.load_model(model, experiment_name)
+# mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=1)
+# print("k=1",mAP)
+# mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=50)
+# print("k=50",mAP)
 # mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=100)
+# print("k=100",mAP)
+# mAP = mean_average_precision(model, test_dataloader, train_dataloader)
 # print(mAP)
 
 
-# embeddings_matrix, targets_vector = utils.get_dataset_embeddings(
-#     model, train_dataloader)
-# colors, classes = utils.get_colorcode(dataset)
-# train_dataset.plot_2D_embeddings(embeddings_matrix, targets_vector, colors, classes)
+embeddings_matrix, targets_vector = utils.get_dataset_embeddings(
+    model, train_dataloader)
+colors, classes = utils.get_colorcode(dataset)
+utils.plot_embeddings(embeddings_matrix, targets_vector, colors, classes)

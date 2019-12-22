@@ -1,7 +1,6 @@
 from torchvision.datasets import MNIST, CIFAR10
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
 import numpy as np
 
 from ContrastiveSampler import ContrastiveSampler
@@ -47,21 +46,6 @@ class BaseData(Dataset):
         im = trans(im)
         im.show()
 
-    def plot_2D_embeddings(self, embeddings, targets, colors, classes, xlim=None, ylim=None):
-        plt.figure(figsize=(10, 10))
-        for i in range(10):
-            inds = np.where(targets == i)[0]
-            plt.scatter(embeddings[inds, 0], embeddings[inds,
-                                                        1], alpha=0.5, color=colors[i])
-        if xlim:
-            plt.xlim(xlim[0], xlim[1])
-        if ylim:
-            plt.ylim(ylim[0], ylim[1])
-        plt.legend(classes)
-        plt.show()
-
-    def plot_ND_embeddings(self, embeddings, targets, colors, classes, xlim=None, ylim=None):
-        raise NotImplementedError
 
 
 if __name__ == "__main__":
