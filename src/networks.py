@@ -102,6 +102,7 @@ class TripletNet(nn.Module):
     def __init__(self, embedding_net):
         super(TripletNet, self).__init__()
         self.embedding_net = embedding_net
+        self.embedding_dim = embedding_net.embedding_dim
 
     def forward(self, x1, x2, x3):
         output1 = self.embedding_net(x1)

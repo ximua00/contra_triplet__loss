@@ -17,7 +17,7 @@ from config import device
 
 dataset = "MNIST"
 sampling_method = "triplet"
-n_epochs = 1
+n_epochs = 20
 data_path = utils.make_directory("../datasets/")
 batch_size = 32
 num_workers = 4
