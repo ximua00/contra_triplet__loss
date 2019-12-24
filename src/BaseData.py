@@ -1,10 +1,10 @@
+from utils import make_directory
+from samplers import ContrastiveSampler, TripletSampler
+import numpy as np
 from torchvision.datasets import MNIST, CIFAR10
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-import numpy as np
-
-from ContrastiveSampler import ContrastiveSampler
-from utils import make_directory
+8
 
 
 data_path = make_directory("../datasets/")
@@ -17,6 +17,7 @@ class BaseData(Dataset):
         self.data = data
         self.data_length = len(data)
         self.n_groundtruths = self.groundtruths_per_class()
+        self.is_triplet = sampler.is_triplet
 
     def groundtruths_per_class(self):
         n_groundtruths = dict()
@@ -29,13 +30,28 @@ class BaseData(Dataset):
         anchor, anchor_target = self.data[idx]
         data_items["anchor"] = anchor
         data_items["anchor_target"] = anchor_target
+
+        if not self.is_triplet:
+            data_items["duplet"], data_items["is_pos"] = self.__getitem_duplet(
+                idx, anchor_target)
+        else:
+            data_items["pos"], data_items["neg"] = self.__getitem_triplet(
+                idx, anchor_target)
+
+        return data_items
+
+    def __getitem_duplet(self, idx, anchor_target):
         if self.is_train:
             duplet_id, is_pos = self.sampler.sample_data(idx, anchor_target)
             duplet, _ = self.data[duplet_id]
-            data_items["duplet"] = duplet
-            data_items["is_pos"] = is_pos
+        return duplet, is_pos
 
-        return data_items
+    def __getitem_triplet(self, idx, anchor_target):
+        if self.is_train:
+            pos_id, neg_id = self.sampler.sample_data(idx, anchor_target)
+            pos, _ = self.data[pos_id]
+            neg, _ = self.data[neg_id]
+        return pos, neg
 
     def __len__(self):
         return self.data_length
@@ -47,23 +63,20 @@ class BaseData(Dataset):
         im.show()
 
 
-
 if __name__ == "__main__":
-    from networks import CIFAREmbeddingNet
+    from networks import MNISTEmbeddingNet
+    from networks import SiameseNet, TripletNet
 
-    net = CIFAREmbeddingNet()
+    net = MNISTEmbeddingNet()
+    model = TripletNet(net)
 
     data_transforms = transforms.Compose([transforms.ToTensor()])
-    train_data = CIFAR10(root=data_path, train=True, transform=data_transforms)
-    sampler = ContrastiveSampler(train_data)
+    train_data = MNIST(root=data_path, train=True, transform=data_transforms)
+    sampler = TripletSampler(train_data)
     train_dataset = BaseData(train_data, sampler)
-    
+
     dataloader = DataLoader(train_dataset, batch_size=4)
-    # for data_items in dataloader:
-        # print(data_items["anchor"].size())
-        # out = net(data_items["anchor"])
-        # print(out.size())
-        # print(data_items["duplet"].size())
-        # print(data_items["is_pos"].size())
-        # print(data_items["anchor_target"].size())
-        # break
+    for data_items in dataloader:
+        print(data_items.keys())
+    
+        break
