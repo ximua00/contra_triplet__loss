@@ -30,27 +30,25 @@ class BaseData(Dataset):
         anchor, anchor_target = self.data[idx]
         data_items["anchor"] = anchor
         data_items["anchor_target"] = anchor_target
-
-        if not self.is_triplet:
-            data_items["duplet"], data_items["is_pos"] = self.__getitem_duplet(
-                idx, anchor_target)
-        else:
-            data_items["pos"], data_items["neg"] = self.__getitem_triplet(
-                idx, anchor_target)
+        if self.is_train:
+            if not self.is_triplet:
+                data_items["duplet"], data_items["is_pos"] = self.__getitem_duplet(
+                    idx, anchor_target)
+            else:
+                data_items["pos"], data_items["neg"] = self.__getitem_triplet(
+                    idx, anchor_target)
 
         return data_items
 
     def __getitem_duplet(self, idx, anchor_target):
-        if self.is_train:
-            duplet_id, is_pos = self.sampler.sample_data(idx, anchor_target)
-            duplet, _ = self.data[duplet_id]
+        duplet_id, is_pos = self.sampler.sample_data(idx, anchor_target)
+        duplet, _ = self.data[duplet_id]
         return duplet, is_pos
 
     def __getitem_triplet(self, idx, anchor_target):
-        if self.is_train:
-            pos_id, neg_id = self.sampler.sample_data(idx, anchor_target)
-            pos, _ = self.data[pos_id]
-            neg, _ = self.data[neg_id]
+        pos_id, neg_id = self.sampler.sample_data(idx, anchor_target)
+        pos, _ = self.data[pos_id]
+        neg, _ = self.data[neg_id]
         return pos, neg
 
     def __len__(self):
