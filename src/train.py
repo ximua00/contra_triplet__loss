@@ -6,17 +6,17 @@ from utils import save_model
 from metrics import mean_average_precision
 
 
-def train(model, criterion, train_dataloader, test_dataloader, optimizer, scheduler, experiment_name, n_epochs=2):
+def train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=2):
     for epoch in range(n_epochs):
-        train_loss = train_epoch(model, criterion, optimizer, train_dataloader)
+        train_loss = train_epoch(model, criterion, optimizer, train_loader)
         print("Epoch: {} loss: {} mAP".format(epoch, train_loss))
         # scheduler.step()
         if epoch % 10 == 0:
-            mean_avg_precision = mean_average_precision(model, test_dataloader, train_dataloader, k=100)
+            mean_avg_precision = mean_average_precision(model, query_loader, gallery_loader, k=100)
             print(mean_avg_precision)
 
     save_model(model, experiment_name)
-    mean_avg_precision = mean_average_precision(model, test_dataloader, train_dataloader, k=100)
+    mean_avg_precision = mean_average_precision(model, query_loader, gallery_loader, k=100)
     print(mean_avg_precision)
 
 

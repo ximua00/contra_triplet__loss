@@ -10,7 +10,7 @@ class MetricSampler:
     def __init__(self, train_data):
         self.train_data = train_data
         self.class_idxs, self.classes_list = self.__get_class_idxs()
-
+        
     def __get_class_idxs(self):
         class_idxs = defaultdict(list)
         for idx, target in enumerate(self.train_data.targets):

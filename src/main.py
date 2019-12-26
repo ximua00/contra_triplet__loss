@@ -6,6 +6,7 @@ import torch
 
 from samplers import *
 from BaseData import BaseData
+from datasets import Cars3D
 from losses import *
 from networks import *
 
@@ -15,8 +16,8 @@ import utils
 from config import device
 
 
-dataset = "MNIST"
-sampling_method = "triplet"
+dataset = "Cars3D"
+sampling_method = "contrastive"
 n_epochs = 20
 data_path = utils.make_directory("../datasets/")
 batch_size = 32
@@ -33,20 +34,26 @@ if dataset == "MNIST":
     mean, std = 0.1307, 0.3081
     data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize((mean,), (std,))])
     train_data = MNIST(root=data_path, train=True, transform=data_transforms)
-    test_data = MNIST(root=data_path, train=False, transform=data_transforms)
-
-if dataset == "FashionMNIST":
+    query_data = MNIST(root=data_path, train=False, transform=data_transforms)
+    gallery_data = MNIST(root=data_path, train=True, transform=data_transforms)
+elif dataset == "FashionMNIST":
     embedding_net = MNISTEmbeddingNet()
     mean, std = 0.28604059698879553, 0.35302424451492237
     data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize((mean,), (std,))])
     train_data = FashionMNIST(root=data_path, train=True, transform=data_transforms, download=True)
-    test_data = FashionMNIST(root=data_path, train=False, transform=data_transforms, download=True)
-
+    query_data = FashionMNIST(root=data_path, train=False, transform=data_transforms, download=True)
+    gallery_data = FashionMNIST(root=data_path, train=True, transform=data_transforms, download=True)
 elif dataset == "CIFAR10":
     embedding_net = CIFAREmbeddingNet(embedding_dim)
     data_transforms = transforms.Compose([transforms.ToTensor()])
     train_data = CIFAR10(root=data_path, train=True, transform=data_transforms)
-    test_data = CIFAR10(root=data_path, train=False, transform=data_transforms)
+    query_data = CIFAR10(root=data_path, train=False, transform=data_transforms)
+    gallery_data = CIFAR10(root=data_path, train=True, transform=data_transforms)
+elif dataset == "Cars3D":
+    embedding_net = CIFAREmbeddingNet(embedding_dim)
+    train_data = Cars3D(root=data_path, mode="train")
+    query_data = Cars3D(root=data_path, mode="query")
+    gallery_data = Cars3D(root=data_path, mode="gallery")
 
 
 if sampling_method == "contrastive":
@@ -60,27 +67,31 @@ elif sampling_method == "triplet":
 
 
 train_dataset = BaseData(train_data, sampler)
-test_dataset = BaseData(test_data, sampler)
+query_dataset = BaseData(query_data, sampler)
+gallery_dataset = BaseData(gallery_data, sampler)
 
-train_dataloader = DataLoader(
+
+train_loader = DataLoader(
     train_dataset, batch_size=batch_size, num_workers=num_workers)
-test_dataloader = DataLoader(
-    test_dataset, batch_size=batch_size, num_workers=num_workers)
+query_loader = DataLoader(
+    query_dataset, batch_size=batch_size, num_workers=num_workers)
+gallery_loader = DataLoader(
+    gallery_dataset, batch_size=batch_size, num_workers=num_workers)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 
 
-train(model, criterion, train_dataloader, test_dataloader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
+train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
 
 # model = utils.load_model(model, experiment_name)
-# mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=1)
+# mAP = mean_average_precision(model, query_loader, gallery_loader,k=1)
 # print("k=1",mAP)
-# mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=50)
+# mAP = mean_average_precision(model, query_loader, gallery_loader,k=50)
 # print("k=50",mAP)
-# mAP = mean_average_precision(model, test_dataloader, train_dataloader,k=100)
+# mAP = mean_average_precision(model, query_loader, gallery_loader,k=100)
 # print("k=100",mAP)
-# mAP = mean_average_precision(model, test_dataloader, train_dataloader)
+# mAP = mean_average_precision(model, query_loader, gallery_loader)
 # print(mAP)
 
 

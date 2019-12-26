@@ -1,13 +1,6 @@
-from utils import make_directory
-from samplers import ContrastiveSampler, TripletSampler
 import numpy as np
-from torchvision.datasets import MNIST, CIFAR10
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-8
-
-
-data_path = make_directory("../datasets/")
 
 
 class BaseData(Dataset):
@@ -62,19 +55,28 @@ class BaseData(Dataset):
 
 
 if __name__ == "__main__":
-    from networks import MNISTEmbeddingNet
+    from utils import make_directory
+    from torchvision.datasets import MNIST, CIFAR10
+    from samplers import ContrastiveSampler, TripletSampler
+    from networks import CIFAREmbeddingNet
     from networks import SiameseNet, TripletNet
+    from datasets import Cars3D
 
-    net = MNISTEmbeddingNet()
+    data_path = make_directory("../datasets/")
+
+    net = CIFAREmbeddingNet()
     model = TripletNet(net)
 
     data_transforms = transforms.Compose([transforms.ToTensor()])
-    train_data = MNIST(root=data_path, train=True, transform=data_transforms)
+    # train_data = MNIST(root=data_path, train=True, transform=data_transforms)
+    train_data = Cars3D(root=data_path, mode="train")
     sampler = TripletSampler(train_data)
+
     train_dataset = BaseData(train_data, sampler)
 
-    dataloader = DataLoader(train_dataset, batch_size=4)
-    for data_items in dataloader:
-        print(data_items.keys())
+    train_dataset.show_image(0)
     
-        break
+    # dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+    # for data_items in dataloader:
+    #     print(data_items.keys())
+        
