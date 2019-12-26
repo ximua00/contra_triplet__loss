@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 import torch
 
-from samplers import *
 from BaseData import BaseData
 from datasets import Cars3D
 from losses import *
@@ -57,26 +56,24 @@ elif dataset == "Cars3D":
 
 
 if sampling_method == "contrastive":
-    sampler = ContrastiveSampler(train_data)
     criterion = ContrastiveLoss(margin=margin)
     model = SiameseNet(embedding_net).to(device)
 elif sampling_method == "triplet":
-    sampler = TripletSampler(train_data)
     criterion = TripletLoss(margin=margin)
     model = TripletNet(embedding_net).to(device)
 
 
-train_dataset = BaseData(train_data, sampler)
-query_dataset = BaseData(query_data, sampler)
-gallery_dataset = BaseData(gallery_data, sampler)
+train_dataset = BaseData(train_data, sampling_method)
+query_dataset = BaseData(query_data, sampling_method)
+gallery_dataset = BaseData(gallery_data, sampling_method)
 
 
 train_loader = DataLoader(
-    train_dataset, batch_size=batch_size, num_workers=num_workers)
+    train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 query_loader = DataLoader(
-    query_dataset, batch_size=batch_size, num_workers=num_workers)
+    query_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 gallery_loader = DataLoader(
-    gallery_dataset, batch_size=batch_size, num_workers=num_workers)
+    gallery_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)

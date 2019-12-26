@@ -2,15 +2,21 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 
+from samplers import *
+
 
 class BaseData(Dataset):
-    def __init__(self, data, sampler):
-        self.is_train = data.train
-        self.sampler = sampler
+    def __init__(self, data, sampling_method):
         self.data = data
+        if sampling_method == "contrastive":
+            self.sampler = ContrastiveSampler(self.data)
+        elif sampling_method == "triplet":
+            self.sampler = TripletSampler(self.data)
+
+        self.is_train = data.train
         self.data_length = len(data)
         self.n_groundtruths = self.groundtruths_per_class()
-        self.is_triplet = sampler.is_triplet
+        self.is_triplet = self.sampler.is_triplet
 
     def groundtruths_per_class(self):
         n_groundtruths = dict()
@@ -66,15 +72,14 @@ if __name__ == "__main__":
 
     net = CIFAREmbeddingNet()
     model = TripletNet(net)
-
-    data_transforms = transforms.Compose([transforms.ToTensor()])
+    sampling_method = "contrastive"
+    # data_transforms = transforms.Compose([transforms.ToTensor()])
     # train_data = MNIST(root=data_path, train=True, transform=data_transforms)
-    train_data = Cars3D(root=data_path, mode="train")
-    sampler = TripletSampler(train_data)
+    train_data = Cars3D(root=data_path, mode="gallery")
+    
+    train_dataset = BaseData(train_data, sampling_method=sampling_method)
 
-    train_dataset = BaseData(train_data, sampler)
-
-    train_dataset.show_image(0)
+    print(train_dataset.n_groundtruths)
     
     # dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     # for data_items in dataloader:
