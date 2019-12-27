@@ -17,7 +17,7 @@ from config import device
 
 dataset = "Cars3D"
 sampling_method = "contrastive"
-n_epochs = 20
+n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 32
 num_workers = 4
@@ -54,7 +54,6 @@ elif dataset == "Cars3D":
     query_data = Cars3D(root=data_path, mode="query")
     gallery_data = Cars3D(root=data_path, mode="gallery")
 
-
 if sampling_method == "contrastive":
     criterion = ContrastiveLoss(margin=margin)
     model = SiameseNet(embedding_net).to(device)
@@ -81,15 +80,15 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 
 train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
 
-# model = utils.load_model(model, experiment_name)
-# mAP = mean_average_precision(model, query_loader, gallery_loader,k=1)
-# print("k=1",mAP)
-# mAP = mean_average_precision(model, query_loader, gallery_loader,k=50)
-# print("k=50",mAP)
-# mAP = mean_average_precision(model, query_loader, gallery_loader,k=100)
-# print("k=100",mAP)
-# mAP = mean_average_precision(model, query_loader, gallery_loader)
-# print(mAP)
+model = utils.load_model(model, experiment_name)
+mAP = mean_average_precision(model, query_loader, gallery_loader,k=1)
+print("k=1",mAP)
+mAP = mean_average_precision(model, query_loader, gallery_loader,k=50)
+print("k=50",mAP)
+mAP = mean_average_precision(model, query_loader, gallery_loader,k=100)
+print("k=100",mAP)
+mAP = mean_average_precision(model, query_loader, gallery_loader)
+print(mAP)
 
 
 # embeddings_matrix, targets_vector = utils.get_dataset_embeddings(

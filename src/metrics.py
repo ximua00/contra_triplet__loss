@@ -29,15 +29,16 @@ def mean_average_precision(model, query_loader, gallery_loader, k=-1, function='
 
     groundtruths_per_class = gallery_loader.dataset.n_groundtruths
     sum_average_precision = 0.0
-    results_counter = np.arange(1, k+1)
 
     for query_id in tqdm(range(query_targets.shape[0])):
         query = int(query_targets[query_id])
         
         normalizer = min(groundtruths_per_class[query], k)
-        best_result_ids = sorted_dists[query_id,:]
+        best_result_ids = sorted_dists[query_id,:normalizer]
 
         positives_counter = count_positives(query, best_result_ids, gallery_targets)
+        results_counter = np.arange(1, normalizer+1)
+
         scores = positives_counter/results_counter
         average_precision = float(scores.sum()) / normalizer
         sum_average_precision += average_precision
