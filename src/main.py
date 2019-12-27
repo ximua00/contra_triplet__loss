@@ -5,7 +5,7 @@ from torch.optim import lr_scheduler
 import torch
 
 from BaseData import BaseData
-from datasets import Cars3D
+from datasets import *
 from losses import *
 from networks import *
 
@@ -15,7 +15,7 @@ import utils
 from config import device
 
 
-dataset = "Cars3D"
+dataset = "CarsEPFL"
 sampling_method = "contrastive"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
@@ -53,6 +53,11 @@ elif dataset == "Cars3D":
     train_data = Cars3D(root=data_path, mode="train")
     query_data = Cars3D(root=data_path, mode="query")
     gallery_data = Cars3D(root=data_path, mode="gallery")
+elif dataset == "CarsEPFL":
+    embedding_net = CIFAREmbeddingNet(embedding_dim)
+    train_data = CarsEPFL(root=data_path, mode="train")
+    query_data = CarsEPFL(root=data_path, mode="query")
+    gallery_data = CarsEPFL(root=data_path, mode="gallery")
 
 if sampling_method == "contrastive":
     criterion = ContrastiveLoss(margin=margin)

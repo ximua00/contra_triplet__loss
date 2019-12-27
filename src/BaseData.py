@@ -66,20 +66,26 @@ if __name__ == "__main__":
     from samplers import ContrastiveSampler, TripletSampler
     from networks import CIFAREmbeddingNet
     from networks import SiameseNet, TripletNet
-    from datasets import Cars3D
+    from datasets import Cars3D, CarsEPFL
 
     data_path = make_directory("../datasets/")
 
     net = CIFAREmbeddingNet()
     model = TripletNet(net)
-    sampling_method = "contrastive"
+    sampling_method = "triplet"
     # data_transforms = transforms.Compose([transforms.ToTensor()])
     # train_data = MNIST(root=data_path, train=True, transform=data_transforms)
-    train_data = Cars3D(root=data_path, mode="gallery")
+    train_data = CarsEPFL(root=data_path, mode="train")
+    query_data = CarsEPFL(root=data_path, mode="query")
+    gallery_data = CarsEPFL(root=data_path, mode="gallery")
     
     train_dataset = BaseData(train_data, sampling_method=sampling_method)
+    query_dataset = BaseData(query_data, sampling_method=sampling_method)
+    gallery_dataset = BaseData(gallery_data, sampling_method=sampling_method)
 
     print(train_dataset.n_groundtruths)
+    print(query_dataset.n_groundtruths)
+    print(gallery_dataset.n_groundtruths)
     
     # dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     # for data_items in dataloader:
