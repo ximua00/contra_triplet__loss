@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
+from samplers import ContrastiveSampler, TripletSampler
 
 from samplers import *
 
@@ -17,6 +18,7 @@ class BaseData(Dataset):
         self.data_length = len(data)
         self.n_groundtruths = self.groundtruths_per_class()
         self.is_triplet = self.sampler.is_triplet
+        self.targets = self.data.targets
 
     def groundtruths_per_class(self):
         n_groundtruths = dict()
@@ -63,7 +65,6 @@ class BaseData(Dataset):
 if __name__ == "__main__":
     from utils import make_directory
     from torchvision.datasets import MNIST, CIFAR10
-    from samplers import ContrastiveSampler, TripletSampler
     from networks import CIFAREmbeddingNet
     from networks import SiameseNet, TripletNet
     from datasets import Cars3D, CarsEPFL

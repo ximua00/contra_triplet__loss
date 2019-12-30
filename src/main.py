@@ -8,6 +8,7 @@ from BaseData import BaseData
 from datasets import *
 from losses import *
 from networks import *
+from OnlineSampler import OnlineSampler
 
 from train import train
 from metrics import mean_average_precision
