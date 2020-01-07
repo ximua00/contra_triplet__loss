@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+def _apply_margin(x, m):
+    if isinstance(m, float):
+        return (x + m).clamp(min=0)
 
 class ContrastiveLoss(nn.Module):
     """
@@ -50,28 +53,35 @@ class HardTripletLoss(nn.Module):
         self.margin = margin
 
     def forward(self, anchor, positive, negative, targets, size_average=True):
-        ALMOST_INF = 9999.9
-        # anchor_pos_dists = torch.cdist(anchor, positive)
-        # anchor_neg_dists = torch.cdist(anchor, negative)
-        anchor_dists = torch.cdist(anchor, anchor)
+        # ALMOST_INF = 9999.9
+        # # anchor_pos_dists = torch.cdist(anchor, positive)
+        # # anchor_neg_dists = torch.cdist(anchor, negative)
+        cdist = anchor_dists = torch.cdist(anchor, anchor)
         
-        pos_mask, neg_mask = self.create_masks(targets)
+        # pos_mask, neg_mask = self.create_masks(targets)
 
-        # max_pos,_ = torch.max(anchor_pos_dists*pos_mask, dim=1)
-        # min_neg,_ = torch.min(anchor_neg_dists + ALMOST_INF*pos_mask, dim=1) 
-        max_pos,_ = torch.max(anchor_dists*pos_mask, dim=1)
-        min_neg,_ = torch.min(anchor_dists + ALMOST_INF*pos_mask, dim=1) 
+        # # max_pos,_ = torch.max(anchor_pos_dists*pos_mask, dim=1)
+        # # min_neg,_ = torch.min(anchor_neg_dists + ALMOST_INF*pos_mask, dim=1) 
+        # max_pos,_ = torch.max(anchor_dists*pos_mask, dim=1)
+        # min_neg,_ = torch.min(anchor_dists + ALMOST_INF*pos_mask, dim=1) 
 
-        losses = F.relu(max_pos - min_neg + self.margin)                
+        # losses = F.relu(max_pos - min_neg + self.margin)       
+        mask_pos = (targets[None, :] == targets[:, None]).float()
+
+        ALMOST_INF = 9999.9
+        furthest_positive = torch.max(cdist * mask_pos, dim=0)[0]
+        furthest_negative = torch.min(cdist + ALMOST_INF*mask_pos, dim=0)[0]
+
+        losses = _apply_margin(furthest_positive - furthest_negative, self.margin)         
         return losses.mean() if size_average else losses.sum()
 
-    def create_masks(self,targets):
-        mask = targets.repeat(targets.size()[0])
-        mask = mask.view((targets.size()[0], targets.size()[0]))
-        pos_mask = (targets == mask.t())
-        neg_mask = (targets != mask.t())
+    # def create_masks(self,targets):
+    #     mask = targets.repeat(targets.size()[0])
+    #     mask = mask.view((targets.size()[0], targets.size()[0]))
+    #     pos_mask = (targets == mask.t())
+    #     neg_mask = (targets != mask.t())
 
-        return pos_mask, neg_mask
+    #     return pos_mask, neg_mask
 
 
 if __name__ == "__main__":
