@@ -65,7 +65,7 @@ if __name__ == "__main__":
     for e in range(5):
         for idx ,data_items in enumerate(dataloader):
             if idx == 0:
-                print(data_items["anchor_target"])
+                print(data_items.keys())
     
 
 

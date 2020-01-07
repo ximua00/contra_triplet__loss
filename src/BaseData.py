@@ -11,7 +11,7 @@ class BaseData(Dataset):
         self.data = data
         if sampling_method == "contrastive":
             self.sampler = ContrastiveSampler(self.data)
-        elif sampling_method == "triplet":
+        elif sampling_method == "triplet" or "hardtriplet":
             self.sampler = TripletSampler(self.data)
 
         self.is_train = data.train

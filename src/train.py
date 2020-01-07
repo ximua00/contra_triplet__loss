@@ -25,13 +25,15 @@ def train_epoch(model, criterion, optimizer, dataloader):
     total_loss = 0
     for idx, data_items in enumerate(tqdm(dataloader)):
         optimizer.zero_grad()
+        # TODO
+        # send_to_device(data_items, device)
 
         if not dataloader.dataset.is_triplet:
             output1, output2 = model(data_items["anchor"].to(device), data_items["duplet"].to(device))
             loss = criterion(output1, output2, data_items["is_pos"].to(device))
         else:
             embs = model(data_items["anchor"].to(device), data_items["pos"].to(device), data_items["neg"].to(device))
-            loss = criterion(*embs)
+            loss = criterion(*embs, data_items["anchor_target"].to(device))
 
         total_loss += loss.item()
         loss.backward()

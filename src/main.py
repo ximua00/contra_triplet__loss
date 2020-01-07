@@ -16,16 +16,18 @@ import utils
 from config import device
 
 
-dataset = "CarsEPFL"
-sampling_method = "contrastive"
+dataset = "MNIST"
+sampling_method = "hardtriplet"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
-batch_size = 32
+batch_size = 64
 num_workers = 4
 lr = 1e-3
 step_size = 8
 margin = 1.0
-embedding_dim=32
+embedding_dim=2
+n_classes = 4
+n_samples = 16
 
 experiment_name = dataset + "_" + str(embedding_dim) + "_" + sampling_method
 
@@ -66,15 +68,22 @@ if sampling_method == "contrastive":
 elif sampling_method == "triplet":
     criterion = TripletLoss(margin=margin)
     model = TripletNet(embedding_net).to(device)
+elif sampling_method == "hardtriplet":
+    criterion = HardTripletLoss(margin=margin)
+    model = TripletNet(embedding_net).to(device)
 
 
 train_dataset = BaseData(train_data, sampling_method)
 query_dataset = BaseData(query_data, sampling_method)
 gallery_dataset = BaseData(gallery_data, sampling_method)
 
+if sampling_method == "hardtriplet":
+    balanced_sampler = OnlineSampler(train_dataset.targets, n_classes=n_classes, n_samples=n_samples)
+    train_loader = DataLoader(train_dataset, batch_sampler=balanced_sampler)
+else:
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 
-train_loader = DataLoader(
-    train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 query_loader = DataLoader(
     query_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 gallery_loader = DataLoader(
