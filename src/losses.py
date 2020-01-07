@@ -51,11 +51,14 @@ class HardTripletLoss(nn.Module):
     def forward(self, anchor, positive, negative, targets, size_average=True):
         anchor_pos_dists = torch.cdist(anchor, positive)
         anchor_neg_dists = torch.cdist(anchor, negative)
-
+        
         pos_mask, neg_mask = self.create_masks(targets)
 
         max_pos,_ = torch.max(anchor_pos_dists*pos_mask, dim=1)
-        min_neg,_ = torch.min(anchor_neg_dists/neg_mask, dim=1)    
+        
+        neg_masked_dists = anchor_neg_dists*neg_mask
+        neg_masked_dists[neg_masked_dists==0.0] = 99999
+        min_neg,_ = torch.min(neg_masked_dists, dim=1) 
         losses = F.relu(max_pos - min_neg + self.margin)
 
         return losses.mean() if size_average else losses.sum()

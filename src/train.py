@@ -5,6 +5,7 @@ from config import device
 from utils import save_model
 from metrics import mean_average_precision
 
+from torch import autograd
 
 def train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=2):
     for epoch in range(n_epochs):
@@ -32,9 +33,9 @@ def train_epoch(model, criterion, optimizer, dataloader):
             output1, output2 = model(data_items["anchor"].to(device), data_items["duplet"].to(device))
             loss = criterion(output1, output2, data_items["is_pos"].to(device))
         else:
-            embs = model(data_items["anchor"].to(device), data_items["pos"].to(device), data_items["neg"].to(device))
-            loss = criterion(*embs, data_items["anchor_target"].to(device))
-
+            anchor, pos, neg = model(data_items["anchor"].to(device), data_items["pos"].to(device), data_items["neg"].to(device))
+            loss = criterion(anchor, pos, neg, data_items["anchor_target"].to(device))
+            print(loss)
         total_loss += loss.item()
         loss.backward()
 
