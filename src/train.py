@@ -35,7 +35,6 @@ def train_epoch(model, criterion, optimizer, dataloader):
         else:
             anchor, pos, neg = model(data_items["anchor"].to(device), data_items["pos"].to(device), data_items["neg"].to(device))
             loss = criterion(anchor, pos, neg, data_items["anchor_target"].to(device))
-            print(loss)
         total_loss += loss.item()
         loss.backward()
 
