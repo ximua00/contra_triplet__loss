@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import random
 
+from matplotlib import pyplot as plt
+
 
 class OnlineSampler(BatchSampler):
     def __init__(self, labels, n_classes, n_samples):
@@ -53,22 +55,24 @@ if __name__ == "__main__":
     import torchvision.transforms as transforms
     from utils import make_directory
     from BaseData import BaseData
+    from torchvision.utils import make_grid
+
     data_path = make_directory("../datasets/")
     sampling_method = "triplet"
     
-    # data_transforms = transforms.Compose([transforms.ToTensor()])
-    # train_data = MNIST(root=data_path, train=True, transform=data_transforms)
-    train_data = Cars3D(root=data_path, mode="train")
+    data_transforms = transforms.Compose([transforms.ToTensor()])
+    train_data = MNIST(root=data_path, train=True, transform=data_transforms)
+    # train_data = Cars3D(root=data_path, mode="train")
     train_dataset = BaseData(train_data, sampling_method=sampling_method)
 
     balanced_sampler = OnlineSampler(train_dataset.targets, n_classes=2, n_samples=2)
 
     dataloader = DataLoader(train_dataset, batch_sampler=balanced_sampler)
-    for e in range(5):
-        for idx ,data_items in enumerate(dataloader):
-            if idx == 0:
-                print(data_items.keys())
+    for idx ,data_items in enumerate(dataloader):
+        print(data_items["anchor_target"])
+        break
     
 
+ 
 
     

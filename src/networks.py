@@ -36,7 +36,7 @@ class MNISTEmbeddingNet(nn.Module):
         output = self.convnet(x)
         output = output.view(output.size()[0], -1)
         output = self.fc(output)
-        return output
+        return F.normalize(output)
 
     def get_embedding(self, x):
         return self.forward(x)
@@ -77,7 +77,7 @@ class CIFAREmbeddingNet(nn.Module):
         output = self.convnet(x)
         output = output.view(output.size()[0], -1)
         output = self.fc(output)
-        return output
+        return F.normalize(output)
 
     def get_embedding(self, x):
         return self.forward(x)
@@ -116,6 +116,7 @@ class TripletNet(nn.Module):
 
 
 if __name__ == "__main__":
-    x=torch.rand((1,3,32,32))
+    x=torch.rand((5,3,32,32))
+
     embedding_net = CIFAREmbeddingNet()
-    print(embedding_net(x).size())
+    print(embedding_net(x))
