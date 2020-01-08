@@ -52,7 +52,7 @@ class HardTripletLoss(nn.Module):
         super(HardTripletLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, anchor, positive, negative, targets, size_average=True):
+    def forward(self, anchor, targets, size_average=True):
         # ALMOST_INF = 9999.9
         # # anchor_pos_dists = torch.cdist(anchor, positive)
         # # anchor_neg_dists = torch.cdist(anchor, negative)

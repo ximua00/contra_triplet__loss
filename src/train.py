@@ -2,14 +2,14 @@ import torch
 from tqdm import tqdm
 
 from config import device
-from utils import save_model
+from utils import save_model, send_to_device
 from metrics import mean_average_precision
 
 from torch import autograd
 
-def train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=2):
+def train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, sampling_method, n_epochs=2):
     for epoch in range(n_epochs):
-        train_loss = train_epoch(model, criterion, optimizer, train_loader)
+        train_loss = train_epoch(model, criterion, optimizer, train_loader, sampling_method)
         print("Epoch: {} loss: {} mAP".format(epoch, train_loss))
         # scheduler.step()
         if epoch % 10 == 0:
@@ -21,20 +21,23 @@ def train(model, criterion, train_loader, query_loader, gallery_loader, optimize
     print(mean_avg_precision)
 
 
-def train_epoch(model, criterion, optimizer, dataloader):
+def train_epoch(model, criterion, optimizer, dataloader, sampling_method):
     model.train()
     total_loss = 0
     for idx, data_items in enumerate(tqdm(dataloader)):
         optimizer.zero_grad()
-        # TODO
-        # send_to_device(data_items, device)
+        data_items = send_to_device(data_items, device)
 
-        if not dataloader.dataset.is_triplet:
-            output1, output2 = model(data_items["anchor"].to(device), data_items["duplet"].to(device))
-            loss = criterion(output1, output2, data_items["is_pos"].to(device))
-        else:
-            anchor, pos, neg = model(data_items["anchor"].to(device), data_items["pos"].to(device), data_items["neg"].to(device))
-            loss = criterion(anchor, pos, neg, data_items["anchor_target"].to(device))
+        if sampling_method == "contrastive":
+            output1, output2 = model(data_items["anchor"], data_items["duplet"])
+            loss = criterion(output1, output2, data_items["is_pos"])
+        elif sampling_method == "triplet":
+            anchor, pos, neg = model(data_items["anchor"], data_items["pos"], data_items["neg"])
+            loss = criterion(anchor, pos, neg, data_items["anchor_target"])
+        elif sampling_method == "hardtriplet":
+            anchor = model(data_items["anchor"])
+            loss = criterion(anchor, data_items["anchor_target"])
+
         total_loss += loss.item()
         loss.backward()
 

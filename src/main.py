@@ -17,7 +17,7 @@ from config import device
 
 
 dataset = "MNIST"
-sampling_method = "hardtriplet"
+sampling_method = "contrastive"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 64
@@ -70,7 +70,7 @@ elif sampling_method == "triplet":
     model = TripletNet(embedding_net).to(device)
 elif sampling_method == "hardtriplet":
     criterion = HardTripletLoss(margin=margin)
-    model = TripletNet(embedding_net).to(device)
+    model = embedding_net.to(device)
 
 
 train_dataset = BaseData(train_data, sampling_method)
@@ -93,7 +93,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 
 
-train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, n_epochs=n_epochs)
+train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, sampling_method, n_epochs=n_epochs)
 
 model = utils.load_model(model, experiment_name)
 mAP = mean_average_precision(model, query_loader, gallery_loader,k=1)

@@ -24,6 +24,10 @@ def load_model(model, experiment_name):
         os.path.join("../models/", experiment_name+'.pt')))
     return model
 
+def send_to_device(data_items, device):
+    for key in data_items.keys():
+        data_items[key] = data_items[key].to(device)
+    return data_items
 
 @torch.no_grad()
 def get_dataset_embeddings(model, dataloader):
