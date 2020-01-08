@@ -26,7 +26,7 @@ class OnlineSampler(BatchSampler):
 
     def __iter__(self):
         self.count = 0
-        while self.count + self.batch_size < self.n_dataset:
+        while self.count + self.batch_size <= self.n_dataset:
             classes = np.random.choice(self.labels_set, self.n_classes, replace=False)
             indices = []
             for class_ in classes:
