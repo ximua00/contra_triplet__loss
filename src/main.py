@@ -17,7 +17,7 @@ from config import device
 
 
 dataset = "MNIST"
-sampling_method = "contrastive"
+sampling_method = "hardtriplet"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 64

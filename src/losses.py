@@ -6,6 +6,11 @@ def _apply_margin(x, m):
     if isinstance(m, float):
         return (x + m).clamp(min=0)
 
+def calc_cdist(a, b, metric='euclidean'):
+    diff = a[:, None, :] - b[None, :, :]
+    if metric == 'euclidean':
+        return torch.sqrt(torch.sum(diff*diff, dim=2) + 1e-12)
+
 class ContrastiveLoss(nn.Module):
     """
     Contrastive loss
@@ -53,44 +58,22 @@ class HardTripletLoss(nn.Module):
         self.margin = margin
 
     def forward(self, anchor, targets, size_average=True):
-        # ALMOST_INF = 9999.9
-        # # anchor_pos_dists = torch.cdist(anchor, positive)
-        # # anchor_neg_dists = torch.cdist(anchor, negative)
-        cdist = anchor_dists = torch.cdist(anchor, anchor)
-        
-        # pos_mask, neg_mask = self.create_masks(targets)
-
-        # # max_pos,_ = torch.max(anchor_pos_dists*pos_mask, dim=1)
-        # # min_neg,_ = torch.min(anchor_neg_dists + ALMOST_INF*pos_mask, dim=1) 
-        # max_pos,_ = torch.max(anchor_dists*pos_mask, dim=1)
-        # min_neg,_ = torch.min(anchor_dists + ALMOST_INF*pos_mask, dim=1) 
-
-        # losses = F.relu(max_pos - min_neg + self.margin)       
-        mask_pos = (targets[None, :] == targets[:, None]).float()
-
         ALMOST_INF = 9999.9
-        furthest_positive = torch.max(cdist * mask_pos, dim=0)[0]
-        furthest_negative = torch.min(cdist + ALMOST_INF*mask_pos, dim=0)[0]
 
-        losses = _apply_margin(furthest_positive - furthest_negative, self.margin)         
+        anchor_dists = calc_cdist(anchor, anchor)
+        mask_pos = (targets[None, :] == targets[:, None]).float()
+        furthest_positive = torch.max(anchor_dists * mask_pos, dim=0)[0]
+        furthest_negative = torch.min(anchor_dists + ALMOST_INF*mask_pos, dim=0)[0]
+        
+        losses = F.relu(furthest_positive - furthest_negative + self.margin)    
         return losses.mean() if size_average else losses.sum()
-
-    # def create_masks(self,targets):
-    #     mask = targets.repeat(targets.size()[0])
-    #     mask = mask.view((targets.size()[0], targets.size()[0]))
-    #     pos_mask = (targets == mask.t())
-    #     neg_mask = (targets != mask.t())
-
-    #     return pos_mask, neg_mask
 
 
 if __name__ == "__main__":
     criterion = HardTripletLoss(margin=1.0)
 
     anchor = torch.rand((6,2))
-    pos = torch.rand((6,2))
-    neg = torch.rand((6,2))
     target = torch.tensor([1,1,2,2,3,3])
 
-    loss = criterion(anchor, pos, neg, target)
+    loss = criterion(anchor, target)
     print(loss)
