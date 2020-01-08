@@ -1,6 +1,7 @@
 from torch.utils.data import BatchSampler
 import numpy as np
 import torch
+import random
 
 
 class OnlineSampler(BatchSampler):
@@ -37,6 +38,7 @@ class OnlineSampler(BatchSampler):
                 if self.used_label_indices_count[class_] + self.n_samples > len(self.label_to_indices[class_]):
                     np.random.shuffle(self.label_to_indices[class_])
                     self.used_label_indices_count[class_] = 0
+            random.shuffle(indices)
             yield indices
             self.count += self.batch_size
 

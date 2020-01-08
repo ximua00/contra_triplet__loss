@@ -6,11 +6,6 @@ def _apply_margin(x, m):
     if isinstance(m, float):
         return (x + m).clamp(min=0)
 
-def calc_cdist(a, b, metric='euclidean'):
-    diff = a[:, None, :] - b[None, :, :]
-    if metric == 'euclidean':
-        return torch.sqrt(torch.sum(diff*diff, dim=2) + 1e-12)
-
 class ContrastiveLoss(nn.Module):
     """
     Contrastive loss
@@ -59,13 +54,21 @@ class HardTripletLoss(nn.Module):
 
     def forward(self, anchor, targets, size_average=True):
         ALMOST_INF = 9999.9
-
-        anchor_dists = calc_cdist(anchor, anchor)
+        # print(targets)
+        anchor_dists = torch.cdist(anchor, anchor)
         mask_pos = (targets[None, :] == targets[:, None]).float()
+        # print(mask_pos)
+        # print(anchor_dists)
+        
         furthest_positive = torch.max(anchor_dists * mask_pos, dim=0)[0]
         furthest_negative = torch.min(anchor_dists + ALMOST_INF*mask_pos, dim=0)[0]
-        
+
+        # print(furthest_positive)
+        # print(furthest_negative)
+
         losses = F.relu(furthest_positive - furthest_negative + self.margin)    
+        # print(losses)
+        
         return losses.mean() if size_average else losses.sum()
 
 
