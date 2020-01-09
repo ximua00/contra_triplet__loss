@@ -25,9 +25,9 @@ num_workers = 4
 lr = 1e-3
 step_size = 8
 margin = 1.0
-embedding_dim=2
-n_classes = 4
-n_samples = 2
+embedding_dim=32
+n_classes = 8
+n_samples = 64
 
 experiment_name = dataset + "_" + str(embedding_dim) + "_" + sampling_method
 
