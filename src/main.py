@@ -16,8 +16,8 @@ import utils
 from config import device
 
 
-dataset = "MNIST"
-sampling_method = "hardtriplet"
+dataset = "CarsShapeNet"
+sampling_method = "triplet"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 64
@@ -42,9 +42,9 @@ elif dataset == "FashionMNIST":
     embedding_net = MNISTEmbeddingNet()
     mean, std = 0.28604059698879553, 0.35302424451492237
     data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize((mean,), (std,))])
-    train_data = FashionMNIST(root=data_path, train=True, transform=data_transforms, download=True)
-    query_data = FashionMNIST(root=data_path, train=False, transform=data_transforms, download=True)
-    gallery_data = FashionMNIST(root=data_path, train=True, transform=data_transforms, download=True)
+    train_data = FashionMNIST(root=data_path, train=True, transform=data_transforms)
+    query_data = FashionMNIST(root=data_path, train=False, transform=data_transforms)
+    gallery_data = FashionMNIST(root=data_path, train=True, transform=data_transforms)
 elif dataset == "CIFAR10":
     embedding_net = CIFAREmbeddingNet(embedding_dim)
     data_transforms = transforms.Compose([transforms.ToTensor()])
@@ -61,6 +61,11 @@ elif dataset == "CarsEPFL":
     train_data = CarsEPFL(root=data_path, mode="train")
     query_data = CarsEPFL(root=data_path, mode="query")
     gallery_data = CarsEPFL(root=data_path, mode="gallery")
+elif dataset == "CarsShapeNet":
+    embedding_net = CIFAREmbeddingNet(embedding_dim)
+    train_data = CarsShapeNet(root=data_path, mode="train")
+    query_data = CarsShapeNet(root=data_path, mode="query")
+    gallery_data = CarsShapeNet(root=data_path, mode="gallery")
 
 if sampling_method == "contrastive":
     criterion = ContrastiveLoss(margin=margin)
