@@ -5,6 +5,12 @@ import torch.nn.functional as F
 def _apply_margin(x, m):
     if isinstance(m, float):
         return (x + m).clamp(min=0)
+    elif m.lower() == "soft":
+        return F.softplus(x)
+    elif m.lower() == "none":
+        return x
+    else:
+        raise NotImplementedError("The margin %s is not implemented in BatchHard!" % m)
 
 class ContrastiveLoss(nn.Module):
     """
@@ -64,15 +70,36 @@ class HardTripletLoss(nn.Module):
         losses = F.relu(furthest_positive - furthest_negative + self.margin)
         return losses.mean(), (losses > 0).sum().item()
 
-def _apply_margin(x, m):
-    if isinstance(m, float):
-        return (x + m).clamp(min=0)
-    elif m.lower() == "soft":
-        return F.softplus(x)
-    elif m.lower() == "none":
-        return x
-    else:
-        raise NotImplementedError("The margin %s is not implemented in BatchHard!" % m)
+def batch_hard(anchor, pids, margin):
+    """Computes the batch hard loss as in arxiv.org/abs/1703.07737.
+    Args:
+        cdist (2D Tensor): All-to-all distance matrix, sized (B,B).
+        pids (1D tensor): PIDs (classes) of the identities, sized (B,).
+        margin: The margin to use, can be 'soft', 'none', or a number.
+    """
+    anchor_dists = torch.cdist(anchor, anchor)
+    mask_pos = (pids[None, :] == pids[:, None]).float()
+
+    ALMOST_INF = 9999.9
+    furthest_positive = torch.max(anchor_dists * mask_pos, dim=0)[0]
+    furthest_negative = torch.min(anchor_dists + ALMOST_INF*mask_pos, dim=0)[0]
+    #furthest_negative = torch.stack([
+    #    torch.min(row_d[row_m]) for row_d, row_m in zip(cdist, mask_neg)
+    #]).squeeze() # stacking adds an extra dimension
+    losses = _apply_margin(furthest_positive - furthest_negative, margin)
+    return losses.mean(), (losses > 0).sum().item()
+
+
+class BatchHard(nn.Module):
+    def __init__(self, margin, **kwargs):
+        super(BatchHard, self).__init__()
+        self.name = "BatchHard(m={})".format(margin)
+        self.margin = margin
+
+    def forward(self, anchor, pids, **kwargs):
+        return batch_hard(anchor, pids, self.margin)
+
+
 
 def batch_soft(anchor, pids, margin, T=1.0):
     """Calculates the batch soft.
@@ -128,7 +155,7 @@ class BatchSoft(nn.Module):
 
 
 if __name__ == "__main__":
-    criterion = BatchSoft(margin=1.0)
+    criterion = BatchHard(margin=1.0)
 
     anchor = torch.rand((6,2))
     target = torch.tensor([1,1,2,2,3,3])
