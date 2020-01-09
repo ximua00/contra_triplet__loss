@@ -152,7 +152,7 @@ class CarsEPFL:
 
 
 class CarsShapeNet:
-    def __init__(self, root, mode, transform=None, train_size=10, image_size=32, query_split=30):
+    def __init__(self, root, mode, transform=None, train_size=120, image_size=32, query_split=30):
         self.data_path = os.path.join(root, "shapenet_rendered")
         self.train = True if mode == "train" else False
         self.mode = mode
