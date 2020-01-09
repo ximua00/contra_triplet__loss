@@ -26,10 +26,11 @@ lr = 1e-3
 step_size = 8
 margin = 1.0
 embedding_dim=32
-n_classes = 8
-n_samples = 64
+n_classes = 8   
+n_samples = 64 
 
 experiment_name = dataset + "_" + str(embedding_dim) + "_" + sampling_method
+print(experiment_name)
 
 if dataset == "MNIST":
     embedding_net = MNISTEmbeddingNet()
@@ -74,7 +75,7 @@ elif sampling_method == "triplet":
     criterion = TripletLoss(margin=margin)
     model = TripletNet(embedding_net).to(device)
 elif sampling_method == "hardtriplet":
-    criterion = HardTripletLoss(margin=margin)
+    criterion = BatchSoft(margin=margin)
     model = embedding_net.to(device)
 
 
@@ -101,6 +102,7 @@ scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size)
 train(model, criterion, train_loader, query_loader, gallery_loader, optimizer, scheduler, experiment_name, sampling_method, n_epochs=n_epochs)
 
 model = utils.load_model(model, experiment_name)
+print(experiment_name)
 mAP = mean_average_precision(model, query_loader, gallery_loader,k=1)
 print("k=1",mAP)
 mAP = mean_average_precision(model, query_loader, gallery_loader,k=50)
