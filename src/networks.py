@@ -33,9 +33,9 @@ class MNISTEmbeddingNet(nn.Module):
                                 )
 
         for m in self.modules():
-			if isinstance(m, nn.Conv2d):
-				torch.nn.init.xavier_uniform_(m.weight)
-				if m.bias is not None:
+		    if isinstance(m, nn.Conv2d):
+			    torch.nn.init.xavier_uniform_(m.weight)
+			    if m.bias is not None:
 					 torch.nn.init.xavier_uniform_(m.bias)
 
     def forward(self, x):
@@ -78,9 +78,9 @@ class CIFAREmbeddingNet(nn.Module):
                                     nn.ReLU(),
                                     nn.Linear(64, self.embedding_dim)
                                     )
-                                    
+
         for m in self.modules():
-			if isinstance(m, nn.Conv2d):
+            if isinstance(m, nn.Conv2d):
 				torch.nn.init.xavier_uniform_(m.weight)
 				if m.bias is not None:
 					 torch.nn.init.xavier_uniform_(m.bias)
