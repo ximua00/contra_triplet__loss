@@ -16,8 +16,8 @@ import utils
 from config import device
 
 
-dataset = "CarsShapeNet"
-sampling_method = "triplet"
+dataset = "MNIST"
+sampling_method = "hardtriplet"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 64

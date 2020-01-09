@@ -17,11 +17,11 @@ class ContrastiveLoss(nn.Module):
         self.margin = margin
         self.eps = 1e-9
 
-    def forward(self, output1, output2, target, size_average=True):
+    def forward(self, output1, output2, target):
         distances = (output2 - output1).pow(2).sum(1)  # squared distances
         losses = 0.5 * (target.float() * distances +
                         (1 + -1 * target).float() * F.relu(self.margin - (distances + self.eps).sqrt()).pow(2))
-        return losses.mean() if size_average else losses.sum()
+        return losses.mean(), (losses > 0).sum().item()
 
 
 class TripletLoss(nn.Module):
@@ -34,12 +34,12 @@ class TripletLoss(nn.Module):
         super(TripletLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, anchor, positive, negative, targets, size_average=True):
+    def forward(self, anchor, positive, negative, targets):
         distance_positive = (anchor - positive).pow(2).sum(1)  # .pow(.5)
         distance_negative = (anchor - negative).pow(2).sum(1)  # .pow(.5)
         losses = F.relu(distance_positive - distance_negative + self.margin)
         
-        return losses.mean() if size_average else losses.sum()
+        return losses.mean(), (losses > 0).sum().item()
 
 
 class HardTripletLoss(nn.Module):
@@ -52,24 +52,17 @@ class HardTripletLoss(nn.Module):
         super(HardTripletLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, anchor, targets, size_average=True):
+    def forward(self, anchor, targets):
         ALMOST_INF = 9999.9
-        # print(targets)
         anchor_dists = torch.cdist(anchor, anchor)
         mask_pos = (targets[None, :] == targets[:, None]).float()
-        # print(mask_pos)
-        # print(anchor_dists)
-        
+
         furthest_positive = torch.max(anchor_dists * mask_pos, dim=0)[0]
         furthest_negative = torch.min(anchor_dists + ALMOST_INF*mask_pos, dim=0)[0]
 
-        # print(furthest_positive)
-        # print(furthest_negative)
-
-        losses = F.relu(furthest_positive - furthest_negative + self.margin)    
-        # print(losses)
+        losses = F.relu(furthest_positive - furthest_negative + self.margin)
         
-        return losses.mean() if size_average else losses.sum()
+        return losses.mean(), (losses > 0).sum().item()
 
 
 if __name__ == "__main__":
@@ -78,5 +71,5 @@ if __name__ == "__main__":
     anchor = torch.rand((6,2))
     target = torch.tensor([1,1,2,2,3,3])
 
-    loss = criterion(anchor, target)
-    print(loss)
+    loss, active_triplets = criterion(anchor, target)
+    print(pos)
