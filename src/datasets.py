@@ -152,7 +152,7 @@ class CarsEPFL:
 
 
 class CarsShapeNet:
-    def __init__(self, root, mode, transform=None, train_size=120, image_size=32, query_split=30):
+    def __init__(self, root, mode, transform=None, train_size=10, image_size=32, query_split=30):
         self.data_path = os.path.join(root, "shapenet_rendered")
         self.train = True if mode == "train" else False
         self.mode = mode
@@ -204,6 +204,7 @@ class CarsShapeNet:
             target = self.car2idx[data_point.split(
                 "/")[3]]  # map car_id_mesh to idx
             image = Image.open(data_point)
+            image = image.convert("RGB")
             image = self.process_data(image)
             data.append(image)
             targets.append(target)
@@ -222,8 +223,22 @@ class CarsShapeNet:
 
 
 if __name__ == "__main__":
+
+    from torch.utils.data import DataLoader
+    from BaseData import BaseData
+
+    sampling_method = "triplet"
     data_path = make_directory("../datasets/")
     train_data = CarsShapeNet(data_path, mode="train")
+    train_dataset = BaseData(train_data, sampling_method=sampling_method)
 
-    print(len(train_data))
+
+    dataloader = DataLoader(train_dataset,batch_size=4, shuffle=True)
+    for idx ,data_items in enumerate(dataloader):
+        print(data_items["anchor_target"].size())
+        print(data_items["anchor"].size())
+
+        break
+
+    
 
