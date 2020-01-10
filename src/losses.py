@@ -48,14 +48,14 @@ class TripletLoss(nn.Module):
         return losses.mean(), (losses > 0).sum().item()
 
 
-class HardTripletLoss(nn.Module):
+class BatchHard(nn.Module):
     """
     From "In Defense of the Triplet Loss"
     For each anchor takes the hardest positive and negative pair
     """
 
     def __init__(self, margin):
-        super(HardTripletLoss, self).__init__()
+        super(BatchHard, self).__init__()
         self.margin = margin
 
     def forward(self, anchor, targets):
@@ -69,37 +69,7 @@ class HardTripletLoss(nn.Module):
 
         losses = F.relu(furthest_positive - furthest_negative + self.margin)
         return losses.mean(), (losses > 0).sum().item()
-
-def batch_hard(anchor, pids, margin):
-    """Computes the batch hard loss as in arxiv.org/abs/1703.07737.
-    Args:
-        cdist (2D Tensor): All-to-all distance matrix, sized (B,B).
-        pids (1D tensor): PIDs (classes) of the identities, sized (B,).
-        margin: The margin to use, can be 'soft', 'none', or a number.
-    """
-    anchor_dists = torch.cdist(anchor, anchor)
-    mask_pos = (pids[None, :] == pids[:, None]).float()
-
-    ALMOST_INF = 9999.9
-    furthest_positive = torch.max(anchor_dists * mask_pos, dim=0)[0]
-    furthest_negative = torch.min(anchor_dists + ALMOST_INF*mask_pos, dim=0)[0]
-    #furthest_negative = torch.stack([
-    #    torch.min(row_d[row_m]) for row_d, row_m in zip(cdist, mask_neg)
-    #]).squeeze() # stacking adds an extra dimension
-    losses = _apply_margin(furthest_positive - furthest_negative, margin)
-    return losses.mean(), (losses > 0).sum().item()
-
-
-class BatchHard(nn.Module):
-    def __init__(self, margin, **kwargs):
-        super(BatchHard, self).__init__()
-        self.name = "BatchHard(m={})".format(margin)
-        self.margin = margin
-
-    def forward(self, anchor, pids, **kwargs):
-        return batch_hard(anchor, pids, self.margin)
-
-
+    
 
 def batch_soft(anchor, pids, margin, T=1.0):
     """Calculates the batch soft.
@@ -111,7 +81,7 @@ def batch_soft(anchor, pids, margin, T=1.0):
         margin: The margin to use, can be 'soft', 'none', or a number.
         T (float): The temperature of the softmax operation.
     """
-    # mask where all positivies are set to true
+    # mask where all positives are set to true
     mask_pos = pids[None, :] == pids[:, None]
     mask_neg = ~mask_pos.data
 
@@ -122,15 +92,16 @@ def batch_soft(anchor, pids, margin, T=1.0):
     cdist_max[mask_neg] = -float('inf')
     cdist_min = anchor_dists.clone()
     cdist_min[mask_pos] = float('inf')
-
+    
     # NOTE: We could even take multiple ones by increasing num_samples,
     #       the following `gather` call does the right thing!
     idx_pos = torch.multinomial(F.softmax(cdist_max/T, dim=1), num_samples=1)
     idx_neg = torch.multinomial(F.softmin(cdist_min/T, dim=1), num_samples=1)
+
     positive = anchor_dists.gather(dim=1, index=idx_pos)[:,0]  # Drop the extra (samples) dim
     negative = anchor_dists.gather(dim=1, index=idx_neg)[:,0]
+    
     losses = _apply_margin(positive - negative, margin)
-
     return losses.mean(), (losses > 0).sum().item()
 
 class BatchSoft(nn.Module):
@@ -155,11 +126,9 @@ class BatchSoft(nn.Module):
 
 
 if __name__ == "__main__":
-    criterion = BatchHard(margin=1.0)
+    criterion = BatchSoft(margin=1.0)
 
     anchor = torch.rand((6,2))
     target = torch.tensor([1,1,2,2,3,3])
 
     loss, active_samples = criterion(anchor, target)
-    print(loss)
-    print(active_samples)

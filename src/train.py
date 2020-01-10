@@ -35,7 +35,7 @@ def train_epoch(model, criterion, optimizer, dataloader, sampling_method):
         elif sampling_method == "triplet":
             anchor, pos, neg = model(data_items["anchor"], data_items["pos"], data_items["neg"])
             loss, active_sample = criterion(anchor, pos, neg, data_items["anchor_target"])
-        elif sampling_method == "hardtriplet":
+        elif sampling_method == "batch_hard" or "batch_soft":
             anchor = model(data_items["anchor"])
             loss, active_sample = criterion(anchor, data_items["anchor_target"])
 

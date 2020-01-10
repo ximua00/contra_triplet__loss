@@ -17,7 +17,7 @@ from config import device
 
 
 dataset = "MNIST"
-sampling_method = "hardtriplet"
+sampling_method = "batch_soft"
 n_epochs = 50
 data_path = utils.make_directory("../datasets/")
 batch_size = 64
@@ -26,8 +26,8 @@ lr = 1e-3
 step_size = 8
 margin = 1.0
 embedding_dim=32
-n_classes = 8   
-n_samples = 64 
+n_classes = 8  
+n_samples = 64
 
 experiment_name = dataset + "_" + str(embedding_dim) + "_" + sampling_method
 print(experiment_name)
@@ -74,16 +74,21 @@ if sampling_method == "contrastive":
 elif sampling_method == "triplet":
     criterion = TripletLoss(margin=margin)
     model = TripletNet(embedding_net).to(device)
-elif sampling_method == "hardtriplet":
+elif sampling_method == "batch_hard":
+    criterion = BatchHard(margin=margin)
+    model = embedding_net.to(device)
+elif sampling_method == "batch_soft":
     criterion = BatchSoft(margin=margin)
     model = embedding_net.to(device)
+else:
+    raise NotImplementedError
 
 
 train_dataset = BaseData(train_data, sampling_method)
 query_dataset = BaseData(query_data, sampling_method)
 gallery_dataset = BaseData(gallery_data, sampling_method)
 
-if sampling_method == "hardtriplet":
+if sampling_method == "batch_hard" or "batch_soft":
     balanced_sampler = OnlineSampler(train_dataset.targets, n_classes=n_classes, n_samples=n_samples)
     train_loader = DataLoader(train_dataset, batch_sampler=balanced_sampler)
 else:
