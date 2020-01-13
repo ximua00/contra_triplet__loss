@@ -92,19 +92,14 @@ def batch_soft(anchor, pids, margin, T=1.0):
     cdist_max[mask_neg] = -float('inf')
     cdist_min = anchor_dists.clone()
     cdist_min[mask_pos] = float('inf')
-
-    print(cdist_min)
     
     # NOTE: We could even take multiple ones by increasing num_samples,
     #       the following `gather` call does the right thing!
     idx_pos = torch.multinomial(F.softmax(cdist_max/T, dim=1), num_samples=1)
     idx_neg = torch.multinomial(F.softmin(cdist_min/T, dim=1), num_samples=2)
-    print(idx_neg)
 
     positive = anchor_dists.gather(dim=1, index=idx_pos)[:,0]  # Drop the extra (samples) dim
-    negative = anchor_dists.gather(dim=1, index=idx_neg) [:,1]
-
-    print(negative)
+    negative = anchor_dists.gather(dim=1, index=idx_neg)[:,0]
     
     losses = _apply_margin(positive - negative, margin)
     return losses.mean(), (losses > 0).sum().item()
@@ -132,7 +127,7 @@ class BatchSoft(nn.Module):
 
 
 if __name__ == "__main__":
-    criterion = BatchSoft(margin=1.0, T=1.0)
+    criterion = BatchSoft(margin=1.0, T=0.0001)
 
     anchor = torch.rand((6,2))
     target = torch.tensor([1,1,2,2,3,3])
