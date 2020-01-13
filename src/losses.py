@@ -96,7 +96,7 @@ def batch_soft(anchor, pids, margin, T=1.0):
     # NOTE: We could even take multiple ones by increasing num_samples,
     #       the following `gather` call does the right thing!
     idx_pos = torch.multinomial(F.softmax(cdist_max/T, dim=1), num_samples=1)
-    idx_neg = torch.multinomial(F.softmin(cdist_min/T, dim=1), num_samples=2)
+    idx_neg = torch.multinomial(F.softmin(cdist_min/T, dim=1), num_samples=1)
 
     positive = anchor_dists.gather(dim=1, index=idx_pos)[:,0]  # Drop the extra (samples) dim
     negative = anchor_dists.gather(dim=1, index=idx_neg)[:,0]
