@@ -75,7 +75,7 @@ elif sampling_method == "triplet":
     criterion = TripletLoss(margin=margin)
     model = TripletNet(embedding_net).to(device)
 elif sampling_method == "batch_hard":
-    criterion = BatchHard(margin=margin)
+    criterion = BatchSoft(margin=margin,T=0.00001) # very small temperature
     model = embedding_net.to(device)
 elif sampling_method == "batch_soft":
     criterion = BatchSoft(margin=margin)
