@@ -4,7 +4,6 @@
 ```conda install --file requirements.txt```
 
 ### Run experiments
-TODO: Argparser
 ```python main.py```
 
 ### Loss Implementations
@@ -30,3 +29,6 @@ TODO: Argparser
 6. [Data CarsShapeNet](https://www.shapenet.org)
 7. [Paper FaceNet](https://arxiv.org/abs/1503.03832)
 8. [Paper In Defense of Triplet Loss](https://arxiv.org/abs/1703.07737)
+
+### TODO
+1. Argparser
