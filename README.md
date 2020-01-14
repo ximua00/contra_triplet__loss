@@ -6,11 +6,10 @@
 ### Run experiments
 ```python main.py```
 
-### Results
-Mean Average Precision@100
-| Dataset        | Contrastive Loss  | Triplet Loss | Batch Hard |
+### Results (mAP@100)
+| Dataset | Contrastive Loss | Triplet Loss | Batch Hard |
 | ------------- |:-------------:|:-----:|:-----:|
-| MNIST      | 0.986 | 0.983 | -- |
+| MNIST | 0.986 | 0.983 | -- |
 | FashionMNIST | 0.86 | 0.871 | -- |
 | CIFAR10 | 0.697 | 0.639 | -- |
 | Cars3D | 0.501 | 0.532 | 0.667 |
