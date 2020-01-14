@@ -1,11 +1,11 @@
 ## Contrastive and Triplet Loss experiments
 
 ### Setup
-'''conda install --file requirements.txt'''
+```conda install --file requirements.txt```
 
 ### Run experiments
 TODO: Argparser
-'''python main.py'''
+```python main.py```
 
 ### Loss Implementations
 1. Contrastive Loss
