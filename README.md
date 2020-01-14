@@ -1,10 +1,21 @@
-## Contrastive and Triplet Loss experiments
+## Pytorch Contrastive and Triplet Loss experiments
 
 ### Setup
 ```conda install --file requirements.txt```
 
 ### Run experiments
 ```python main.py```
+
+### Results
+Mean Average Precision@100
+| Dataset        | Contrastive Loss  | Triplet Loss | Batch Hard |
+| ------------- |:-------------:|:-----:|:-----:|
+| MNIST      | 0.986 | 0.983 | -- |
+| FashionMNIST | 0.86 | 0.871 | -- |
+| CIFAR10 | 0.697 | 0.639 | -- |
+| Cars3D | 0.501 | 0.532 | 0.667 |
+| CarsEPFL | 0.832 | 0.769 | 0.761 |
+| CarsShapeNet | 0.56 | 0.679 | 0.739 |
 
 ### Loss Implementations
 1. Contrastive Loss
