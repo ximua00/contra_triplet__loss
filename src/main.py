@@ -16,10 +16,10 @@ import utils
 from config import device
 
 
-dataset = "MNIST"
+dataset = "CarsEPFL"
 sampling_method = "batch_soft"
 n_epochs = 50
-data_path = utils.make_directory("../datasets/")
+data_path = utils.make_directory("../../datasets/")
 batch_size = 64
 num_workers = 4
 lr = 1e-3

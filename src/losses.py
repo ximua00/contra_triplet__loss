@@ -71,39 +71,6 @@ class BatchHard(nn.Module):
         return losses.mean(), (losses > 0).sum().item()
     
 
-def batch_soft(anchor, pids, margin, T=1.0):
-    """Calculates the batch soft.
-    Instead of picking the hardest example through argmax or argmin,
-    a softmax (softmin) is used to sample and use less difficult examples as well.
-    Args:
-        cdist (2D Tensor): All-to-all distance matrix, sized (B,B).
-        pids (1D tensor): PIDs (classes) of the identities, sized (B,).
-        margin: The margin to use, can be 'soft', 'none', or a number.
-        T (float): The temperature of the softmax operation.
-    """
-    # mask where all positives are set to true
-    mask_pos = pids[None, :] == pids[:, None]
-    mask_neg = ~mask_pos.data
-
-    anchor_dists = torch.cdist(anchor, anchor)
-
-    # only one copy
-    cdist_max = anchor_dists.clone()
-    cdist_max[mask_neg] = -float('inf')
-    cdist_min = anchor_dists.clone()
-    cdist_min[mask_pos] = float('inf')
-    
-    # NOTE: We could even take multiple ones by increasing num_samples,
-    #       the following `gather` call does the right thing!
-    idx_pos = torch.multinomial(F.softmax(cdist_max/T, dim=1), num_samples=1)
-    idx_neg = torch.multinomial(F.softmin(cdist_min/T, dim=1), num_samples=1)
-
-    positive = anchor_dists.gather(dim=1, index=idx_pos)[:,0]  # Drop the extra (samples) dim
-    negative = anchor_dists.gather(dim=1, index=idx_neg)[:,0]
-    
-    losses = _apply_margin(positive - negative, margin)
-    return losses.mean(), (losses > 0).sum().item()
-
 class BatchSoft(nn.Module):
     """BatchSoft implementation using softmax.
     
@@ -123,7 +90,38 @@ class BatchSoft(nn.Module):
         self.T = T
 
     def forward(self, anchor, pids):
-        return batch_soft(anchor, pids, self.margin, self.T)
+        
+        """Calculates the batch soft.
+        Instead of picking the hardest example through argmax or argmin,
+        a softmax (softmin) is used to sample and use less difficult examples as well.
+        Args:
+            cdist (2D Tensor): All-to-all distance matrix, sized (B,B).
+            pids (1D tensor): PIDs (classes) of the identities, sized (B,).
+            margin: The margin to use, can be 'soft', 'none', or a number.
+            T (float): The temperature of the softmax operation.
+        """
+        # mask where all positives are set to true
+        mask_pos = pids[None, :] == pids[:, None]
+        mask_neg = ~mask_pos.data
+
+        anchor_dists = torch.cdist(anchor, anchor)
+
+        # only one copy
+        cdist_max = anchor_dists.clone()
+        cdist_max[mask_neg] = -float('inf')
+        cdist_min = anchor_dists.clone()
+        cdist_min[mask_pos] = float('inf')
+        
+        # NOTE: We could even take multiple ones by increasing num_samples,
+        #       the following `gather` call does the right thing!
+        idx_pos = torch.multinomial(F.softmax(cdist_max/self.T, dim=1), num_samples=1)
+        idx_neg = torch.multinomial(F.softmin(cdist_min/self.T, dim=1), num_samples=1)
+
+        positive = anchor_dists.gather(dim=1, index=idx_pos)[:,0]  # Drop the extra (samples) dim
+        negative = anchor_dists.gather(dim=1, index=idx_neg)[:,0]
+        
+        losses = _apply_margin(positive - negative, self.margin)
+        return losses.mean(), (losses > 0).sum().item()
 
 
 if __name__ == "__main__":
