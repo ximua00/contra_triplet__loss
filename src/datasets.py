@@ -59,7 +59,7 @@ class Cars3D:
         targets = []
         for data_point in self.data_files:
             target = self.car2idx[data_point.split(
-                "/")[4]]  # map car_id_mesh to idx
+                "/")[5]]  # map car_id_mesh to idx
             image = Image.open(data_point)
             image = self.process_data(image)
 
@@ -202,7 +202,7 @@ class CarsShapeNet:
         targets = []
         for data_point in self.data_files:
             target = self.car2idx[data_point.split(
-                "/")[3]]  # map car_id_mesh to idx
+                "/")[4]]  # map car_id_mesh to idx
             image = Image.open(data_point)
             image = image.convert("RGB")
             image = self.process_data(image)
