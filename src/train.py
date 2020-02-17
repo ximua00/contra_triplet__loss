@@ -12,8 +12,8 @@ def train(model, criterion, train_loader, query_loader, gallery_loader, optimize
         train_loss, active_samples = train_epoch(model, criterion, optimizer, train_loader, sampling_method)
         print("Epoch: {} loss: {} Active samples: {}".format(epoch, train_loss, active_samples))
         # scheduler.step()
-        if epoch % 10 == 0:
-            _ = evaluation(model, query_loader, gallery_loader)
+        # if epoch % 10 == 0:
+        #     _ = evaluation(model, query_loader, gallery_loader)
     save_model(model, experiment_name)
 
 

@@ -114,7 +114,7 @@ def config():
                         help="number of workers")                        
     parser.add_argument('-b_k', '--n_classes', type=int, default=8,
                         help="number of classes for online sampler")
-    parser.add_argument('-b_n', '--n_samples', type=int, default=64,
+    parser.add_argument('-b_n', '--n_samples', type=int, default=32,
                         help="number of samples per class for online sampler")
     parser.add_argument('-g', '--gpu', type=int, default=0,
                         help="GPU ID")
