@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 from collections import OrderedDict
+import torchvision.models as models
 
 
 class MNISTEmbeddingNet(nn.Module):
@@ -91,6 +92,21 @@ class CIFAREmbeddingNet(nn.Module):
         return self.forward(x)
 
 
+class ResNetEmbeddingNet(nn.Module):
+    def __init__(self, embedding_dim=2):
+        super(ResNetEmbeddingNet, self).__init__()
+        self.embedding_dim = embedding_dim
+        self.resnet18 = models.resnet18(pretrained=False)
+        self.resnet18.fc = nn.Linear(512, self.embedding_dim)
+
+    def forward(self, x):
+        output = self.resnet18(x)
+        return output
+
+    def get_embedding(self, x):
+        return self.forward(x)
+
+
 class SiameseNet(nn.Module):
     def __init__(self, embedding_net):
         super(SiameseNet, self).__init__()
@@ -126,5 +142,5 @@ class TripletNet(nn.Module):
 if __name__ == "__main__":
     x=torch.rand((5,3,32,32))
 
-    embedding_net = CIFAREmbeddingNet()
-    print(embedding_net(x))
+    embedding_net = ResNetEmbeddingNet(embedding_dim=32)
+    embedding_net(x)

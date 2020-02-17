@@ -100,6 +100,8 @@ def config():
                         help="define the number of random integers")
     parser.add_argument('--data_path', default="../../datasets/",
                         help="root data folder")
+    parser.add_argument('-m', '--model', default="lenet",
+                        help="network")
     parser.add_argument('-b', '--batch_size', type=int, default=256,
                         help="batch size")
     parser.add_argument('-l', '--lr', type=float, default=1e-3,

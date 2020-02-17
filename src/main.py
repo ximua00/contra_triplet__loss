@@ -23,7 +23,7 @@ data_path = utils.make_directory(args.data_path)
 
 experiment_id = str(uuid.uuid4().fields[-1])[:5]
 experiment_name = args.dataset + "_" + \
-    str(args.embedding_dim) + "_" + args.sampling_method + "_" + experiment_id
+    str(args.embedding_dim) + "_" + args.sampling_method + "_" + args.model + "_" + experiment_id
 print(experiment_name)
 
 if args.dataset == "Cars3D":
@@ -45,7 +45,12 @@ elif args.dataset == "CarsStanford":
 else:
     raise ValueError("Provided dataset does not exist")
 
-embedding_net = CIFAREmbeddingNet(args.embedding_dim)
+if args.model == "lenet":
+    embedding_net = CIFAREmbeddingNet(args.embedding_dim)
+elif args.model == "resnet":
+    embedding_net = ResNetEmbeddingNet(args.embedding_dim)
+else:
+    raise ValueError("Provided model does not exist")
 
 if args.sampling_method == "contrastive":
     criterion = ContrastiveLoss(margin=args.margin)
@@ -54,7 +59,6 @@ elif args.sampling_method == "triplet":
     criterion = TripletLoss(margin=args.margin)
     model = TripletNet(embedding_net).to(device)
 elif args.sampling_method == "batch_soft":
-    # very small temperature TODO:check performance
     criterion = BatchSoft(margin=args.margin,T=0.01)
     model = embedding_net.to(device)
 elif args.sampling_method == "batch_hard":
