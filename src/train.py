@@ -1,9 +1,9 @@
 import torch
 from tqdm import tqdm
 
-from config import device
+from utils  import device
 from utils import save_model, send_to_device
-from metrics import mean_average_precision
+from metrics import evaluation
 
 from torch import autograd
 
@@ -13,12 +13,8 @@ def train(model, criterion, train_loader, query_loader, gallery_loader, optimize
         print("Epoch: {} loss: {} Active samples: {}".format(epoch, train_loss, active_samples))
         # scheduler.step()
         if epoch % 10 == 0:
-            mean_avg_precision = mean_average_precision(model, query_loader, gallery_loader, k=100)
-            print(mean_avg_precision)
-
+            _ = evaluation(model, query_loader, gallery_loader)
     save_model(model, experiment_name)
-    mean_avg_precision = mean_average_precision(model, query_loader, gallery_loader, k=100)
-    print(mean_avg_precision)
 
 
 def train_epoch(model, criterion, optimizer, dataloader, sampling_method):

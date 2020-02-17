@@ -1,10 +1,9 @@
 import os
+import argparse
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-
-from config import device
 
 
 def make_directory(path):
@@ -89,3 +88,39 @@ def plot_embeddings(embeddings, targets, colors, classes, xlim=None, ylim=None):
         plot_ND_embeddings(embeddings, targets, colors, classes, xlim, ylim)
     else:
         plot_2D_embeddings(embeddings, targets, colors, classes, xlim, ylim)
+
+
+def config():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--dataset', default="Cars3D",
+                        help="dataset to process")
+    parser.add_argument('-s', '--sampling_method', default="triplet",
+                        help="sampling method")
+    parser.add_argument('-e', '--n_epochs', type=int, default=50,
+                        help="define the number of random integers")
+    parser.add_argument('--data_path', default="../../datasets/",
+                        help="root data folder")
+    parser.add_argument('-b', '--batch_size', type=int, default=256,
+                        help="batch size")
+    parser.add_argument('-l', '--lr', type=float, default=1e-3,
+                        help="learning rate")
+    parser.add_argument('-ss', '--step_size', type=int, default=8,
+                        help="scheduler steps")
+    parser.add_argument('-m', '--margin', type=float, default=1.0,
+                        help="margin")
+    parser.add_argument('-emb', '--embedding_dim', type=int, default=32,
+                        help="embedding size")
+    parser.add_argument('-w', '--num_workers', type=int, default=8,
+                        help="number of workers")                        
+    parser.add_argument('-b_k', '--n_classes', type=int, default=8,
+                        help="number of classes for online sampler")
+    parser.add_argument('-b_n', '--n_samples', type=int, default=64,
+                        help="number of samples per class for online sampler")
+    parser.add_argument('-g', '--gpu', type=int, default=0,
+                        help="GPU ID")
+
+    args = parser.parse_args()
+    return args
+
+args = config()
+device = torch.device("cuda:{}".format(args.gpu) if torch.cuda.is_available() else "cpu")
