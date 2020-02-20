@@ -17,8 +17,14 @@ class CarsStanford:
         self.query_split = query_split
 
         self.transform = transform
+        self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
         self.tensor_transform = transforms.Compose(
-            [transforms.Resize((image_size, image_size)), transforms.ToTensor()])
+            [
+                transforms.Resize((224, 224)),transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+                                 ])
 
         self.data_files = self.read_data()
         self.data, self.targets = self.load_data()

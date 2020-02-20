@@ -96,7 +96,7 @@ class ResNetEmbeddingNet(nn.Module):
     def __init__(self, embedding_dim=2):
         super(ResNetEmbeddingNet, self).__init__()
         self.embedding_dim = embedding_dim
-        self.resnet18 = models.resnet18(pretrained=False)
+        self.resnet18 = models.resnet18(pretrained=True)
         self.resnet18.fc = nn.Linear(512, self.embedding_dim)
 
     def forward(self, x):
