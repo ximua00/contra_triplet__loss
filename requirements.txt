@@ -18,7 +18,7 @@ mkl-service==2.3.0
 numpy==1.17.4
 oauthlib==3.1.0
 olefile==0.46
-Pillow==6.2.1
+Pillow>=6.2.2
 protobuf==3.11.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
